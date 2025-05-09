@@ -876,18 +876,21 @@ local function show_diagnostic_in_echo()
         return
     end
 
-    -- Get the first diagnostic for simplicity (or loop for multiple)
+    -- Get the first diagnostic for simplicity
     local diag = diagnostics[1]
+    -- Truncate message to 80 characters and remove newlines to prevent prompt
+    local truncated_message = string.sub(diag.message:gsub("\n", " "), 1, 80)
     local message = string.format(
         "%s: %s (%s)",
         diag.severity == vim.diagnostic.severity.ERROR and "Error" or "Warning",
-        diag.message,
+        truncated_message,
         diag.source or "LSP"
     )
     local severity_color = diag.severity == vim.diagnostic.severity.ERROR and "ErrorMsg" or "WarningMsg"
 
-    -- Display in the command-line area with appropriate highlight
-    vim.api.nvim_echo({ { message, severity_color } }, true, {})
+    -- Display in the command-line area with highlight and redraw to avoid prompt
+    vim.api.nvim_echo({ { message, severity_color } }, false, {})
+    vim.cmd("redraw")
 end
 
 -- Autocommand to trigger diagnostic display on CursorHold
@@ -897,19 +900,6 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end,
     desc = "Show diagnostics in echo area on CursorHold",
 })
-
--- Autocommand to Gshow diagnostics in a floating window on CursorHold
--- vim.api.nvim_create_autocmd("CursorHold", {
---     callback = function()
---         local line = vim.fn.line(".") - 1 -- Current line (0-indexed)
---         local bufnr = vim.api.nvim_get_current_buf()
---         local diagnostics = vim.diagnostic.get(bufnr, { lnum = line })
---         if #diagnostics > 0 then
---             vim.diagnostic.open_float({ scope = "line", focusable = false })
---         end
---     end,
---     desc = "Show diagnostics on CursorHold for current line",
--- })
 
 vim.opt.expandtab = true -- Convert tabs to spaces
 vim.opt.tabstop = 4 -- Tabs display as 4 spaces
