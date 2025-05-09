@@ -4,6 +4,10 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- Disable netrw to make mini.files the default file explorer
+-- vim.g.loaded_netrw = 1
+-- vim.g.loaded_netrwPlugin = 1
+--
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
@@ -167,7 +171,7 @@ require("lazy").setup({
         opts = {
             -- delay between pressing a key and opening which-key (milliseconds)
             -- this setting is independent of vim.opt.timeoutlen
-            delay = 100,
+            delay = 250,
             icons = {
                 -- set icon mappings to true if you have a Nerd Font
                 mappings = vim.g.have_nerd_font,
@@ -324,7 +328,19 @@ require("lazy").setup({
             end, { desc = "[S]earch [N]eovim files" })
         end,
     },
+    {
+        "NeogitOrg/neogit",
+        dependencies = {
+            "nvim-lua/plenary.nvim", -- required
+            "sindrets/diffview.nvim", -- optional - Diff integration
 
+            -- Only one of these is needed.
+            "nvim-telescope/telescope.nvim", -- optional
+            -- "ibhagwan/fzf-lua",              -- optional
+            -- "echasnovski/mini.pick",         -- optional
+            -- "folke/snacks.nvim",             -- optional
+        },
+    },
     -- LSP Plugins
     {
         -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -696,6 +712,8 @@ require("lazy").setup({
             -- - sr)'  - [S]urround [R]eplace [)] [']
             require("mini.surround").setup()
 
+            require("mini.files").setup({})
+
             -- Simple and easy statusline.
             --  You could remove this setup call if you don't like it,
             --  and try some other statusline plugin
@@ -853,7 +871,7 @@ vim.diagnostic.config({
     update_in_insert = false, -- Don't update diagnostics while typing
     severity_sort = true, -- Sort by severity (errors first)
     float = { -- Customize floating window appearance
-        border = "rounded", -- Optional: rounded borders for the popup
+        border = "single", -- Optional: rounded borders for the popup
         max_width = 80, -- Limit width to avoid screen overflow
         source = "always", -- Show diagnostic source (e.g., OmniSharp)
     },
@@ -865,21 +883,28 @@ end, { desc = "Show line diagnostics" })
 
 -- Function to display diagnostics in the command-line area
 local function show_diagnostic_in_echo()
-    -- Get diagnostics for the current line
-    local line = vim.api.nvim_win_get_cursor(0)[1] - 1 -- 0-based line number
+    local line = vim.api.nvim_win_get_cursor(0)[1] - 1
     local bufnr = vim.api.nvim_get_current_buf()
     local diagnostics = vim.diagnostic.get(bufnr, { lnum = line })
 
     if #diagnostics == 0 then
-        -- Clear the echo area if no diagnostics
         vim.api.nvim_echo({ { "" } }, false, {})
         return
     end
 
-    -- Get the first diagnostic for simplicity
     local diag = diagnostics[1]
-    -- Truncate message to 80 characters and remove newlines to prevent prompt
-    local truncated_message = string.sub(diag.message:gsub("\n", " "), 1, 80)
+    -- Get window width and command height
+    local window_width = vim.api.nvim_get_option_value("columns", {})
+    local cmdheight = vim.api.nvim_get_option_value("cmdheight", {})
+    -- Less strict truncation
+    local max_length = math.max(20, window_width - 50)
+    if cmdheight == 1 then
+        max_length = math.min(max_length, window_width - 30)
+    end
+    -- Replace newlines and truncate message
+    local clean_message = diag.message:gsub("\n", " ")
+    local truncated_message = string.sub(clean_message, 1, max_length)
+    -- Format the message
     local message = string.format(
         "%s: %s (%s)",
         diag.severity == vim.diagnostic.severity.ERROR and "Error" or "Warning",
@@ -888,16 +913,20 @@ local function show_diagnostic_in_echo()
     )
     local severity_color = diag.severity == vim.diagnostic.severity.ERROR and "ErrorMsg" or "WarningMsg"
 
-    -- Display in the command-line area with highlight and redraw to avoid prompt
+    -- Final length check
+    local display_width = vim.fn.strdisplaywidth(message)
+    local safe_length = math.min(80, window_width - 40)
+    if display_width > safe_length then
+        message = string.sub(message, 1, safe_length - 3) .. "..."
+    end
+
+    -- Simplified echo call
     vim.api.nvim_echo({ { message, severity_color } }, false, {})
-    vim.cmd("redraw")
 end
 
--- Autocommand to trigger diagnostic display on CursorHold
+-- Autocommand for CursorHold
 vim.api.nvim_create_autocmd("CursorHold", {
-    callback = function()
-        show_diagnostic_in_echo()
-    end,
+    callback = show_diagnostic_in_echo,
     desc = "Show diagnostics in echo area on CursorHold",
 })
 
@@ -906,4 +935,17 @@ vim.opt.tabstop = 4 -- Tabs display as 4 spaces
 vim.opt.shiftwidth = 4 -- Indentation uses 4 spaces
 vim.opt.softtabstop = 4 -- Tab key inserts 4 spaces
 
-vim.keymap.set("i", "<C-BS>", "<C-w>", { noremap = true, desc = "Delete word backward with Ctrl-Backspace" })
+vim.keymap.set({ "i", "c" }, "<C-BS>", "<C-w>", { noremap = true, desc = "Delete word backward with Ctrl-Backspace" })
+
+-- Keybinding: <leader>dd to open mini.files at current file's directory
+vim.keymap.set("n", "<leader>dd", function()
+    local bufname = vim.api.nvim_buf_get_name(0)
+    local path = bufname ~= "" and vim.fn.fnamemodify(bufname, ":p:h") or vim.loop.cwd()
+    require("mini.files").open(path, true)
+end, { desc = "Open mini.files at current file directory" })
+
+-- Add <leader>dp to allow path setting, prefilled with buf's current path
+vim.keymap.set("n", "<leader>dp", function()
+    local current_file_dir = vim.fn.expand("%:p:h") .. "/"
+    vim.fn.feedkeys(":e " .. current_file_dir, "n")
+end, { desc = "Open :e in current file directory for pathname input" })
