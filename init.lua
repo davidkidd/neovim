@@ -439,14 +439,14 @@ require("lazy").setup({
 
                     -- The following code creates a keymap to toggle inlay hints in your
                     -- code, if the language server you are using supports them
-                    if
-                        client
-                        and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
-                    then
-                        map("<leader>th", function()
-                            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-                        end, "[T]oggle Inlay [H]ints")
-                    end
+                    -- if
+                    --     client
+                    --     and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
+                    -- then
+                    --     map("<leader>th", function()
+                    --         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+                    --     end, "[T]oggle Inlay [H]ints")
+                    -- end
                 end,
             })
 
@@ -861,6 +861,11 @@ vim.keymap.set("n", "<leader>sp", function()
         prompt_title = "Search Project Files",
     })
 end, { desc = "[S]earch [P]roject Files" })
+
+-- Neogit
+vim.keymap.set("n", "<leader>g", function()
+    vim.cmd("Neogit cwd=%:p:h")
+end, { desc = "Open git in repo of current file" })
 
 -- Suppresses noisy errors inline
 -- Customize LSP diagnostic display
