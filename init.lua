@@ -14,9 +14,12 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 vim.opt.relativenumber = true
 
+-- Disable cursorline highlighting
+vim.opt.cursorline = false
+-- Enable hlsearch
+vim.opt.hlsearch = true
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = "a"
-
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
@@ -54,7 +57,6 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
-
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
@@ -682,6 +684,10 @@ require("lazy").setup({
                 },
             })
             vim.cmd.colorscheme("lackluster")
+            -- Clear LSP reference highlights
+            vim.api.nvim_set_hl(0, "LspReferenceRead", {})
+            vim.api.nvim_set_hl(0, "LspReferenceWrite", {})
+            vim.api.nvim_set_hl(0, "LspReferenceText", {})
         end,
     },
     -- {
@@ -777,6 +783,16 @@ require("lazy").setup({
                 additional_vim_regex_highlighting = { "c", "ruby" },
             },
             indent = { enable = true, disable = { "ruby" } },
+            -- Add incremental selection configuration
+            incremental_selection = {
+                enable = true,
+                keymaps = {
+                    init_selection = "<C-n>", -- Start incremental selection
+                    node_incremental = "<C-n>", -- Expand to next node (up the scope)
+                    scope_incremental = "<C-s>", -- Expand to next scope (optional)
+                    node_decremental = "<C-p>", -- Shrink to previous node
+                },
+            },
             -- Add textobjects configuration
             textobjects = {
                 select = {
@@ -995,7 +1011,6 @@ end, { desc = "Open :e in current file directory for pathname input" })
 vim.notify("Loading :make configuration", vim.log.levels.INFO)
 vim.opt.makeprg = ""
 vim.opt.errorformat = "%f:%l:%c: %t%*[^:]: %m,%f:%l:%c: %m,%f:%l: %m"
-
 vim.keymap.set("n", "<leader>cc", function()
     if vim.g.last_compile_command == nil or vim.g.last_compile_command == "" then
         vim.notify("No compile command set. Use <leader>ci to set one.", vim.log.levels.WARN)
@@ -1040,7 +1055,7 @@ vim.keymap.set("n", "<leader>ci", function()
             vim.notify("No command provided", vim.log.levels.WARN)
         end
     end)
-end, { desc = "Interactive compile" })
+end, { desc = "Interactive compile from project root" })
 
 vim.api.nvim_create_autocmd("QuickFixCmdPost", {
     pattern = "[^l]*",
