@@ -1,9 +1,5 @@
--- Set <space> as the leader key
--- See `:help mapleader`
---  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
-
 -- Disable netrw to make mini.files the default file explorer
 -- vim.g.loaded_netrw = 1
 -- vim.g.loaded_netrwPlugin = 1
@@ -11,8 +7,6 @@ vim.g.maplocalleader = " "
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
--- [[ Setting options ]]
--- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
@@ -27,9 +21,6 @@ vim.opt.mouse = "a"
 vim.opt.showmode = false
 
 -- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
 vim.schedule(function()
     vim.opt.clipboard = "unnamedplus"
 end)
@@ -72,12 +63,9 @@ vim.opt.scrolloff = 20
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
--- See `:help 'confirm'`
 vim.opt.confirm = true
 
 -- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
-
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
@@ -88,26 +76,17 @@ vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagn
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
---
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
--- Keybinds to make split navigation easier.
---  Use CTRL+<hjkl> to switch between windows
---
---  See `:help wincmd` for a list of all window commands
 vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-
--- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
-
+-- Map jk and kj to Esc in insert mode
+vim.keymap.set("i", "jk", "<Esc>", { noremap = true, silent = true })
+vim.keymap.set("i", "kj", "<Esc>", { noremap = true, silent = true })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -139,8 +118,6 @@ vim.opt.rtp:prepend(lazypath)
 --  To check the current status of your plugins, run
 --    :Lazy
 --
---  You can press `?` in this menu for help. Use `:q` to close the window
---
 --  To update plugins you can run
 --    :Lazy update
 --
@@ -162,9 +139,12 @@ require("lazy").setup({
             },
         },
     },
-
+    {
+        "windwp/nvim-autopairs",
+        event = "InsertEnter", -- Load when entering insert mode
+        opts = {}, -- Use default settings (can customize later)
+    },
     -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
-    --
     { -- Useful plugin to show you pending keybinds.
         "folke/which-key.nvim",
         event = "VimEnter", -- Sets the loading event to 'VimEnter'
@@ -249,36 +229,21 @@ require("lazy").setup({
             { "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
         },
         config = function()
-            -- Telescope is a fuzzy finder that comes with a lot of different things that
-            -- it can fuzzy find! It's more than just a "file finder", it can search
-            -- many different aspects of Neovim, your workspace, LSP, and more!
-            --
-            -- The easiest way to use Telescope, is to start by doing something like:
-            --  :Telescope help_tags
-            --
-            -- After running this command, a window will open up and you're able to
-            -- type in the prompt window. You'll see a list of `help_tags` options and
-            -- a corresponding preview of the help.
-            --
-            -- Two important keymaps to use while in Telescope are:
-            --  - Insert mode: <c-/>
-            --  - Normal mode: ?
-            --
-            -- This opens a window that shows you all of the keymaps for the current
-            -- Telescope picker. This is really useful to discover what Telescope can
-            -- do as well as how to actually do it!
-
             -- [[ Configure Telescope ]]
             -- See `:help telescope` and `:help telescope.setup()`
             require("telescope").setup({
                 -- You can put your default mappings / updates / etc. in here
                 --  All the info you're looking for is in `:help telescope.setup()`
                 --
-                -- defaults = {
-                --   mappings = {
-                --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-                --   },
-                -- },
+                defaults = {
+                    layout_strategy = "horizontal",
+                    layout_config = {
+                        horizontal = {
+                            prompt_position = "top",
+                        },
+                    },
+                    sorting_strategy = "ascending",
+                },
                 -- pickers = {}
                 extensions = {
                     ["ui-select"] = {
@@ -336,9 +301,27 @@ require("lazy").setup({
 
             -- Only one of these is needed.
             "nvim-telescope/telescope.nvim", -- optional
-            -- "ibhagwan/fzf-lua",              -- optional
-            -- "echasnovski/mini.pick",         -- optional
-            -- "folke/snacks.nvim",             -- optional
+        },
+    },
+    {
+        "folke/trouble.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        opts = {
+            warn_no_results = false,
+            modes = {
+                diagnostics = {
+                    auto_open = false,
+                    auto_close = false,
+                    focus = true,
+                    win = { position = "bottom", size = 10 },
+                },
+                quickfix = {
+                    auto_open = false,
+                    auto_close = false,
+                    focus = true,
+                    win = { position = "bottom", size = 10 },
+                },
+            },
         },
     },
     -- LSP Plugins
@@ -436,17 +419,6 @@ require("lazy").setup({
                             end,
                         })
                     end
-
-                    -- The following code creates a keymap to toggle inlay hints in your
-                    -- code, if the language server you are using supports them
-                    -- if
-                    --     client
-                    --     and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
-                    -- then
-                    --     map("<leader>th", function()
-                    --         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-                    --     end, "[T]oggle Inlay [H]ints")
-                    -- end
                 end,
             })
 
@@ -487,7 +459,9 @@ require("lazy").setup({
 
             -- Enable the following language servers
             local servers = {
-                -- clangd = {},
+                clangd = {
+                    filetypes = { "c", "cpp" },
+                },
                 -- gopls = {},
                 -- pyright = {},
                 -- rust_analyzer = {},
@@ -660,30 +634,75 @@ require("lazy").setup({
             signature = { enabled = true },
         },
     },
-
-    { -- You can easily change to a different colorscheme.
-        -- Change the name of the colorscheme plugin below, and then
-        -- change the command in the config to whatever the name of that colorscheme is.
-        --
-        -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-        "folke/tokyonight.nvim",
-        priority = 1000, -- Make sure to load this before all the other start plugins.
+    {
+        "nvim-lualine/lualine.nvim",
+        --dependencies = { 'nvim-tree/nvim-web-devicons' }
+    },
+    {
+        "slugbyte/lackluster.nvim",
+        lazy = false,
+        priority = 1000,
         config = function()
-            ---@diagnostic disable-next-line: missing-fields
-            require("tokyonight").setup({
-                styles = {
-                    comments = { italic = false }, -- Disable italics in comments
+            require("lackluster").setup({
+                tweak_color = {
+                    -- you can set a value to a custom hexcode like' #aaaa77' (hashtag required)
+                    -- or if the value is 'default' or nil it will use lackluster's default color
+                    -- lack = "#aaaa77",
+                    lack = "#ff822e",
+                    luster = "#FFFFFF",
+                    orange = "default",
+                    yellow = "default",
+                    green = "#FEA060",
+                    blue = "default",
+                    red = "default",
+                },
+                tweak_syntax = {
+                    string = "default",
+                    -- string = "#a1b2c3", -- custom hexcode
+                    -- string = color.green, -- lackluster color
+                    string_escape = "default",
+                    comment = "default",
+                    builtin = "default", -- builtin modules and functions
+                    type = "default",
+                    keyword = "#ff822e",
+                    keyword_return = "#ff822e",
+                    keyword_exception = "default",
+                },
+                tweak_highlight = {
+                    ["@keyword"] = {
+                        overwrite = false,
+                        bold = true,
+                        italic = false,
+                    },
+                    ["@function"] = {
+                        overwrite = false,
+                        bold = true,
+                        italic = false,
+                    },
                 },
             })
-
-            -- Load the colorscheme here.
-            -- Like many other themes, this one has different styles, and you could load
-            -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-            --vim.cmd.colorscheme("tokyonight-night")
-            vim.cmd.colorscheme("default")
+            vim.cmd.colorscheme("lackluster")
         end,
     },
-
+    -- {
+    --     "metalelf0/black-metal-theme-neovim",
+    --     lazy = false,
+    --     priority = 1000,
+    --     config = function()
+    --         require("black-metal").setup({
+    --             theme = "bathory",
+    --             variant = "dark",
+    --             code_style = {
+    --                 functions = "bold",
+    --                 comments = "none",
+    --             },
+    --         })
+    --         local status, err = pcall(require("black-metal").load)
+    --         if not status then
+    --             print("Failed to load black-metal theme: " .. err)
+    --         end
+    --     end,
+    -- },
     -- Highlight todo, notes, etc in comments
     {
         "folke/todo-comments.nvim",
@@ -755,7 +774,7 @@ require("lazy").setup({
             auto_install = true,
             highlight = {
                 enable = true,
-                additional_vim_regex_highlighting = { "ruby" },
+                additional_vim_regex_highlighting = { "c", "ruby" },
             },
             indent = { enable = true, disable = { "ruby" } },
             -- Add textobjects configuration
@@ -823,7 +842,6 @@ require("lazy").setup({
         },
     },
 })
-
 -- This is to ensure Mason doesn't try (and fail) to setup csharp-ls
 local lspconfig = require("lspconfig")
 
@@ -833,8 +851,26 @@ lspconfig.csharp_ls.setup({
     single_file_support = true,
 })
 
--- This is for a kind of 'project telescope'
+-- Load the lackluster lualine theme
+local lualine_theme = require("lualine.themes.lackluster")
+local col = require("lackluster.color")
 
+-- Override the insert mode colors
+lualine_theme.insert = {
+    a = { bg = col.lack, fg = col.black, gui = "bold" },
+}
+lualine_theme.command = {
+    a = { bg = col.lack, fg = col.black, gui = "bold" },
+}
+
+-- Configure lualine with the modified theme
+require("lualine").setup({
+    options = {
+        theme = lualine_theme, -- Use the modified theme
+    },
+})
+
+-- This is for a kind of 'project telescope'
 -- Function to find the project root based on common markers
 local function find_project_root()
     local markers = { ".git", ".csproj", ".sln" } -- Add more markers if needed
@@ -954,3 +990,64 @@ vim.keymap.set("n", "<leader>dp", function()
     local current_file_dir = vim.fn.expand("%:p:h") .. "/"
     vim.fn.feedkeys(":e " .. current_file_dir, "n")
 end, { desc = "Open :e in current file directory for pathname input" })
+
+-- [[ :make configuration for compilation ]]
+vim.notify("Loading :make configuration", vim.log.levels.INFO)
+vim.opt.makeprg = ""
+vim.opt.errorformat = "%f:%l:%c: %t%*[^:]: %m,%f:%l:%c: %m,%f:%l: %m"
+
+vim.keymap.set("n", "<leader>cc", function()
+    if vim.g.last_compile_command == nil or vim.g.last_compile_command == "" then
+        vim.notify("No compile command set. Use <leader>ci to set one.", vim.log.levels.WARN)
+        return
+    end
+    vim.cmd("silent! wa")
+    vim.opt.makeprg = vim.g.last_compile_command
+    vim.cmd("make!")
+end, { desc = "Compile from current CWD" })
+
+vim.keymap.set("n", "<leader>cp", function()
+    if vim.g.last_compile_command == nil or vim.g.last_compile_command == "" then
+        vim.notify("No compile command set. Use <leader>ci to set one.", vim.log.levels.WARN)
+        return
+    end
+    local root = find_project_root() or vim.fn.getcwd()
+    local original_cwd = vim.fn.getcwd()
+    vim.fn.chdir(root)
+    vim.cmd("silent! wa")
+    vim.opt.makeprg = vim.g.last_compile_command
+    vim.cmd("make!")
+    vim.fn.chdir(original_cwd)
+end, { desc = "Compile from project root" })
+
+vim.keymap.set("n", "<leader>ci", function()
+    vim.ui.input({
+        prompt = "Compile command: ",
+        default = vim.g.last_compile_command or "make",
+    }, function(input)
+        if input and input ~= "" then
+            vim.g.last_compile_command = input
+            local original_makeprg = vim.opt.makeprg
+            local original_cwd = vim.fn.getcwd()
+            local root = find_project_root() or vim.fn.getcwd()
+            vim.fn.chdir(root)
+            vim.cmd("silent! wa")
+            vim.opt.makeprg = input
+            vim.cmd("make!")
+            vim.opt.makeprg = original_makeprg
+            vim.fn.chdir(original_cwd)
+        else
+            vim.notify("No command provided", vim.log.levels.WARN)
+        end
+    end)
+end, { desc = "Interactive compile" })
+
+vim.api.nvim_create_autocmd("QuickFixCmdPost", {
+    pattern = "[^l]*",
+    callback = function()
+        if #vim.fn.getqflist() > 0 then
+            vim.cmd("Trouble quickfix open")
+            --            vim.notify("Trouble quickfix opened for compilation errors", vim.log.levels.INFO)
+        end
+    end,
+})
