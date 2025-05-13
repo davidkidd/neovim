@@ -1,5 +1,5 @@
-vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.g.mapleader = " "
 -- Disable netrw to make mini.files the default file explorer
 -- vim.g.loaded_netrw = 1
 -- vim.g.loaded_netrwPlugin = 1
@@ -1066,3 +1066,12 @@ vim.api.nvim_create_autocmd("QuickFixCmdPost", {
         end
     end,
 })
+
+-- Move line or selection up/down with Alt-p/Alt-n
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>", { noremap = true })
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>", { noremap = true })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv", { noremap = true })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv", { noremap = true })
+
+-- Select all
+vim.keymap.set("n", "<A-v>", "ggVG", { noremap = true })
