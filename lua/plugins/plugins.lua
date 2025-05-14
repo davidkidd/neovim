@@ -159,7 +159,13 @@ require("lazy").setup({
         dependencies = { "nvim-lua/plenary.nvim" },
         opts = { signs = false },
     },
-
+    {
+        "jake-stewart/multicursor.nvim",
+        branch = "1.0",
+        config = function()
+            require("plugins.multicursor")
+        end,
+    },
     { -- Collection of various small independent plugins/modules
         "echasnovski/mini.nvim",
         config = function()
