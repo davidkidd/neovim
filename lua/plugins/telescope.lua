@@ -3,9 +3,27 @@ local project = require("utils.project") -- Access find_project_root
 
 require("telescope").setup({
     defaults = {
-        layout_strategy = "horizontal",
+        layout_strategy = "flex", -- Use flex to switch between vertical and horizontal
         layout_config = {
-            horizontal = { prompt_position = "top" },
+            flex = {
+                flip_columns = 160, -- Switch to vertical if window width < n columns
+                flip_lines = 20, -- Switch to horizontal if window height < n lines
+            },
+            vertical = {
+                prompt_position = "top",
+                mirror = true, -- Preview at bottom
+                height = 0.9,
+                width = 0.8,
+                preview_height = 0.4,
+                preview_cutoff = 20, -- Preview shows only if n+ lines available
+            },
+            horizontal = {
+                prompt_position = "top",
+                height = 0.9,
+                width = 0.8,
+                preview_width = 0.5, -- Preview takes n% of width
+                preview_cutoff = 160, -- Preview shows only if n+ columns available
+            },
         },
         sorting_strategy = "ascending",
     },

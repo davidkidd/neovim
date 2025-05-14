@@ -32,6 +32,9 @@ statusline.section_location = function()
     return "%2l:%-2v"
 end
 
+require("which-key").add({
+    { "<leader>d", group = "[d]irectory" },
+})
 -- Keybinding: <leader>dd to open mini.files at current file's directory
 vim.keymap.set("n", "<leader>dd", function()
     local bufname = vim.api.nvim_buf_get_name(0)

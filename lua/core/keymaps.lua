@@ -19,10 +19,10 @@ vim.keymap.set("i", "jk", "<Esc>", { noremap = true, silent = true })
 vim.keymap.set("i", "kj", "<Esc>", { noremap = true, silent = true })
 
 -- Move line or selection up/down with Alt-p/Alt-n
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>", { noremap = true })
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>", { noremap = true })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv", { noremap = true })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv", { noremap = true })
+vim.keymap.set("n", "<A-p>", ":m .-2<CR>", { noremap = true })
+vim.keymap.set("n", "<A-n>", ":m .+1<CR>", { noremap = true })
+vim.keymap.set("v", "<A-p>", ":m '<-2<CR>gv", { noremap = true })
+vim.keymap.set("v", "<A-n>", ":m '>+1<CR>gv", { noremap = true })
 
 -- Select all
 vim.keymap.set("n", "<A-v>", "ggVG", { noremap = true })
