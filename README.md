@@ -1,1 +1,1 @@
-Simple init.lua based on kickstart
+Custom Neovim config. 
